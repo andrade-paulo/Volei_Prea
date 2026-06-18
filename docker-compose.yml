@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Container 3: Database (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: volei_prea_db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=voleiprea
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - volei_network
+
+  # Container 2: API (Spring Boot)
+  api:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: volei_prea_api
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/voleiprea
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - volei_network
+
+  # Container 1: Web (Next.js)
+  web:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: volei_prea_web
+    depends_on:
+      - api
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - volei_network
+
+networks:
+  volei_network:
+    driver: bridge
+
+volumes:
+  pgdata:
