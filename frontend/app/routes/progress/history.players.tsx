@@ -27,19 +27,32 @@ function maskPin(pin: string) {
 
 function EditPlayerDialog({
   player,
+  existingNames,
   onClose,
   onSave,
 }: {
   player: Player;
+  existingNames: Set<string>;
   onClose: () => void;
   onSave: (patch: Pick<Player, "name" | "pin">) => void;
 }) {
   const [name, setName] = useState(player.name);
   const [pin, setPin] = useState(player.pin);
 
+  const trimmedName = name.trim();
+  const trimmedPin = pin.trim();
+  const duplicateName = trimmedName.toLowerCase() !== player.name.toLowerCase() && existingNames.has(trimmedName.toLowerCase());
+  const validationMessage = !trimmedName
+    ? "Informe o nome do jogador."
+    : !trimmedPin
+      ? "Informe o PIN do jogador."
+      : duplicateName
+        ? "Já existe outro jogador com esse nome."
+        : null;
+
   function save() {
-    if (!name.trim() || !pin.trim()) return;
-    onSave({ name, pin });
+    if (validationMessage) return;
+    onSave({ name: trimmedName, pin: trimmedPin });
   }
 
   return (
@@ -71,6 +84,8 @@ function EditPlayerDialog({
           />
         </label>
 
+        {validationMessage && <p className="text-sm text-orange-200">{validationMessage}</p>}
+
         <button
           type="button"
           onClick={save}
@@ -90,6 +105,13 @@ export function meta({}: Route.MetaArgs) {
 export default function HistoryPlayers() {
   const { playerHistory, updatePlayer, deletePlayer } = useProgressData();
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const existingNames = new Set(playerHistory.map((player) => player.name.toLowerCase()));
+
+  function handleDeletePlayer(player: Player) {
+    const confirmed = window.confirm(`Excluir o jogador ${player.name}? Esta ação não pode ser desfeita.`);
+    if (!confirmed) return;
+    deletePlayer(player.id);
+  }
 
   return (
     <ProgressScreen className="pb-6 sm:pb-8">
@@ -128,7 +150,7 @@ export default function HistoryPlayers() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deletePlayer(player.id)}
+                    onClick={() => handleDeletePlayer(player)}
                     className="flex size-7 cursor-pointer items-center justify-center sm:size-8 md:size-9"
                     aria-label={`Excluir ${player.name}`}
                   >
@@ -152,6 +174,7 @@ export default function HistoryPlayers() {
       {editingPlayer && (
         <EditPlayerDialog
           player={editingPlayer}
+          existingNames={existingNames}
           onClose={() => setEditingPlayer(null)}
           onSave={(patch) => {
             updatePlayer(editingPlayer.id, patch);

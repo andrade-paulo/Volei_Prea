@@ -31,7 +31,16 @@ export function AddPlayerDialog({
   const nameAlreadyAvailable = availablePlayers.some(
     (player) => player.name.toLowerCase() === normalizedQuery,
   );
-  const canCreate = Boolean(normalizedQuery) && Boolean(pin.trim()) && !nameAlreadyInMatch && !nameAlreadyAvailable;
+  const validationMessage = !normalizedQuery
+    ? "Informe o nome do jogador."
+    : !pin.trim()
+      ? "Informe o PIN do jogador."
+      : nameAlreadyInMatch
+        ? "Esse jogador já está em um dos times."
+        : nameAlreadyAvailable
+          ? "Esse jogador já está disponível na lista acima."
+          : null;
+  const canCreate = !validationMessage;
 
   return (
     <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
@@ -73,9 +82,7 @@ export function AddPlayerDialog({
           )}
         </div>
 
-        {nameAlreadyInMatch && (
-          <p className="text-sm text-orange-200">Esse jogador já está em um dos times.</p>
-        )}
+        {validationMessage && <p className="text-sm text-orange-200">{validationMessage}</p>}
 
         <input
           type="password"

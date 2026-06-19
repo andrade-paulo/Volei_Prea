@@ -31,11 +31,20 @@ export default function AddPlayer() {
     [players, query],
   );
 
+  const trimmedName = query.trim();
+  const trimmedPin = pin.trim();
+  const duplicateName = players.some((player) => player.name.toLowerCase() === trimmedName.toLowerCase());
+  const validationMessage = !trimmedName
+    ? "Informe o nome do jogador."
+    : !trimmedPin
+      ? "Informe o PIN do jogador."
+      : duplicateName
+        ? "Já existe um jogador com esse nome."
+        : null;
+
   function savePlayer() {
-    const name = query.trim();
-    const trimmedPin = pin.trim();
-    if (!name || !trimmedPin) return;
-    addPlayer(name, trimmedPin);
+    if (validationMessage) return;
+    addPlayer(trimmedName, trimmedPin);
     navigate("/progress/new");
   }
 
@@ -60,6 +69,7 @@ export default function AddPlayer() {
           aria-label="PIN do jogador"
           placeholder="PIN do jogador"
         />
+        {validationMessage && <p className="text-sm text-orange-200">{validationMessage}</p>}
         {suggestions.length > 0 && (
           <ul className="overflow-hidden rounded-sm border border-black">
             {suggestions.map((player, i) => (

@@ -21,6 +21,12 @@ export function meta({}: Route.MetaArgs) {
 export default function HistoryMatches() {
   const { matches, deleteMatch } = useProgressData();
 
+  function handleDeleteMatch(matchId: string, label: string) {
+    const confirmed = window.confirm(`Excluir a partida ${label}? Esta ação não pode ser desfeita.`);
+    if (!confirmed) return;
+    deleteMatch(matchId);
+  }
+
   return (
     <ProgressScreen className="pb-6 sm:pb-8">
       <HistoryTabs active="matches" />
@@ -50,7 +56,7 @@ export default function HistoryMatches() {
               <div className={historyMatchesActionsCell}>
                 <button
                   type="button"
-                  onClick={() => deleteMatch(match.id)}
+                  onClick={() => handleDeleteMatch(match.id, `${match.team1.name} x ${match.team2.name}`)}
                   className="flex size-7 cursor-pointer items-center justify-center sm:size-8 md:size-9"
                   aria-label="Excluir partida"
                 >
