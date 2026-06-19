@@ -15,9 +15,10 @@ export function AddPlayerDialog({
   usedPlayerNames: Set<string>;
   onClose: () => void;
   onAddExisting: (playerId: string) => void;
-  onCreateAndAdd: (name: string) => void;
+  onCreateAndAdd: (name: string, pin: string) => void;
 }) {
   const [query, setQuery] = useState("");
+  const [pin, setPin] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
   const filteredPlayers = normalizedQuery
     ? availablePlayers.filter((player) =>
@@ -30,7 +31,7 @@ export function AddPlayerDialog({
   const nameAlreadyAvailable = availablePlayers.some(
     (player) => player.name.toLowerCase() === normalizedQuery,
   );
-  const canCreate = Boolean(normalizedQuery) && !nameAlreadyInMatch && !nameAlreadyAvailable;
+  const canCreate = Boolean(normalizedQuery) && Boolean(pin.trim()) && !nameAlreadyInMatch && !nameAlreadyAvailable;
 
   return (
     <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
@@ -76,10 +77,19 @@ export function AddPlayerDialog({
           <p className="text-sm text-orange-200">Esse jogador já está em um dos times.</p>
         )}
 
+        <input
+          type="password"
+          value={pin}
+          onChange={(event) => setPin(event.target.value)}
+          className={`w-full rounded-full bg-[#b0b0b0] px-4 py-2 text-black outline-none ${progressBody}`}
+          placeholder="PIN do jogador"
+          aria-label="PIN do jogador"
+        />
+
         <button
           type="button"
           disabled={!canCreate}
-          onClick={() => onCreateAndAdd(query)}
+          onClick={() => onCreateAndAdd(query, pin)}
           className={`rounded-lg bg-[#e85d2a] px-4 py-2 uppercase disabled:cursor-default disabled:opacity-40 ${progressLabel}`}
         >
           Criar e adicionar

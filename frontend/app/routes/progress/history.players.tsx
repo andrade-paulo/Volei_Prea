@@ -21,6 +21,10 @@ import {
   progressTableText,
 } from "~/components/progress/tokens";
 
+function maskPin(pin: string) {
+  return "*".repeat(pin.length);
+}
+
 function EditPlayerDialog({
   player,
   onClose,
@@ -60,6 +64,7 @@ function EditPlayerDialog({
         <label className={`flex flex-col gap-1 ${progressBody}`}>
           PIN
           <input
+            type="password"
             value={pin}
             onChange={(event) => setPin(event.target.value)}
             className="rounded-md bg-[#b0b0b0] px-3 py-2 text-black outline-none"
@@ -106,7 +111,7 @@ export default function HistoryPlayers() {
               <div key={player.id} className={historyTableRow}>
                 <div className={historyPlayersDataStrip}>
                   <span className={historyNameCell}>{player.name}</span>
-                  <span className={historyDataCell}>{player.pin}</span>
+                  <span className={historyDataCell}>{maskPin(player.pin)}</span>
                   <span className={historyDataCell}>{player.matches}</span>
                   <span className={historyDataCell}>{player.wins}</span>
                   <span className={historyDataCell}>{player.losses}</span>

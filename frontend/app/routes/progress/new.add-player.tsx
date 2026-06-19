@@ -19,6 +19,7 @@ export default function AddPlayer() {
   const navigate = useNavigate();
   const { players, addPlayer } = useProgressData();
   const [query, setQuery] = useState("");
+  const [pin, setPin] = useState("");
 
   const suggestions = useMemo(
     () =>
@@ -32,8 +33,9 @@ export default function AddPlayer() {
 
   function savePlayer() {
     const name = query.trim();
-    if (!name) return;
-    addPlayer(name);
+    const trimmedPin = pin.trim();
+    if (!name || !trimmedPin) return;
+    addPlayer(name, trimmedPin);
     navigate("/progress/new");
   }
 
@@ -49,6 +51,14 @@ export default function AddPlayer() {
           className={`w-full rounded-full border-none bg-[#b0b0b0] px-4 py-2.5 text-black outline-none sm:px-5 sm:py-3 lg:py-4 ${progressBody}`}
           aria-label="Buscar ou cadastrar jogador"
           placeholder="Nome do jogador"
+        />
+        <input
+          type="password"
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          className={`w-full rounded-full border-none bg-[#b0b0b0] px-4 py-2.5 text-black outline-none sm:px-5 sm:py-3 lg:py-4 ${progressBody}`}
+          aria-label="PIN do jogador"
+          placeholder="PIN do jogador"
         />
         {suggestions.length > 0 && (
           <ul className="overflow-hidden rounded-sm border border-black">

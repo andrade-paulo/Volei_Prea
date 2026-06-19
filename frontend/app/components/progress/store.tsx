@@ -55,7 +55,7 @@ type ProgressData = {
   matches: MatchHistoryItem[];
   playerHistory: PlayerHistoryItem[];
   getPlayerName: (playerId: string) => string;
-  addPlayer: (name: string) => Player;
+  addPlayer: (name: string, pin: string) => Player | null;
   updatePlayer: (playerId: string, patch: Pick<Player, "name" | "pin">) => void;
   deletePlayer: (playerId: string) => void;
   makeManualTeams: () => [TeamDraft, TeamDraft];
@@ -161,14 +161,6 @@ function normalizePlayers(players: unknown): Player[] {
   });
 }
 
-function nextPin(players: Player[]) {
-  const maxPin = players.reduce((max, player) => {
-    const value = Number.parseInt(player.pin, 10);
-    return Number.isFinite(value) ? Math.max(max, value) : max;
-  }, 0);
-  return String(maxPin + 1).padStart(2, "0");
-}
-
 const ProgressDataContext = createContext<ProgressData | null>(null);
 
 export function ProgressDataProvider({ children }: { children: ReactNode }) {
@@ -208,15 +200,17 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
       return playerById.get(playerId)?.name ?? "Jogador removido";
     }
 
-    function addPlayer(name: string) {
+    function addPlayer(name: string, pin: string) {
       const trimmed = name.trim();
+      const trimmedPin = pin.trim();
       const existing = players.find((player) => player.name.toLowerCase() === trimmed.toLowerCase());
       if (existing) return existing;
+      if (!trimmed || !trimmedPin) return null;
 
       const player: Player = {
         id: makeId("player"),
         name: trimmed,
-        pin: nextPin(players),
+        pin: trimmedPin,
         wins: 0,
         losses: 0,
         createdAt: new Date().toISOString(),

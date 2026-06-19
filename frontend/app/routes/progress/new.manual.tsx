@@ -64,8 +64,9 @@ export default function ManualTeams() {
     setDialogSide(null);
   }
 
-  function createAndAddPlayer(side: TeamSide, name: string) {
-    const player = addPlayer(name);
+  function createAndAddPlayer(side: TeamSide, name: string, pin: string) {
+    const player = addPlayer(name, pin);
+    if (!player) return;
     addPlayerToTeam(side, player.id);
   }
 
@@ -126,7 +127,7 @@ export default function ManualTeams() {
           usedPlayerNames={usedPlayerNames}
           onClose={() => setDialogSide(null)}
           onAddExisting={(playerId) => addPlayerToTeam(dialogSide, playerId)}
-          onCreateAndAdd={(name) => createAndAddPlayer(dialogSide, name)}
+          onCreateAndAdd={(name, pin) => createAndAddPlayer(dialogSide, name, pin)}
         />
       )}
     </ProgressScreen>
