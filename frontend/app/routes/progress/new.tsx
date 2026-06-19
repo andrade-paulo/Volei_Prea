@@ -40,8 +40,8 @@ export default function NewGameMode() {
     <ProgressScreen>
       <BackButton to="/progress" />
       <DiagonalLine />
-      <div className="relative z-10 grid h-full min-h-0 flex-1 grid-cols-2">
-        <div className="relative flex h-full items-center justify-center overflow-hidden">
+      <div className="relative z-10 grid h-full min-h-0 flex-1 grid-cols-1 lg:grid-cols-2">
+        <div className="relative hidden h-full items-center justify-center overflow-hidden lg:flex">
           <IconImg
             file={progressIcons.mascotNovoJogo}
             alt=""

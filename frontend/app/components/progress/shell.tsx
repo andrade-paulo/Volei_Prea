@@ -19,6 +19,7 @@ export function ProgressScreen({
     <div
       className={`progress-grain relative flex h-dvh w-full flex-col overflow-hidden bg-[#4a4a4a] text-[#e8e8e8] ${className}`}
     >
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-white/6 ring-inset" aria-hidden />
       {children}
     </div>
   );

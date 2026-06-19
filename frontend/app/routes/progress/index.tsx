@@ -15,7 +15,7 @@ export default function ProgressHome() {
   return (
     <ProgressScreen>
       <DiagonalLine />
-      <div className="relative z-10 grid h-full min-h-0 flex-1 grid-cols-2">
+      <div className="relative z-10 grid h-full min-h-0 flex-1 grid-cols-1 sm:grid-cols-2">
         <SplitPageSide
           to="/progress/new"
           label="Novo jogo"

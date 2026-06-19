@@ -43,7 +43,7 @@ export function DiagonalMenu({ items }: { items: readonly DiagonalMenuItem[] }) 
             style={{
               transform: `translateX(calc(${diagonalShift(index, items.length)} * var(--diagonal-step)))`,
             }}
-            className="group relative flex min-h-11 flex-col gap-2 pb-1 outline-none sm:min-h-12 lg:min-h-14"
+            className="group relative flex min-h-11 flex-col gap-2 rounded-xl px-3 py-2 pb-1 outline-none transition duration-200 hover:bg-white/4 focus-visible:bg-white/4 sm:min-h-12 lg:min-h-14"
           >
             <span className="flex items-center gap-3 sm:gap-4">
               <IconImg file={icon} className={progressIconMenu} alt="" />
@@ -75,16 +75,16 @@ export function SplitPageSide({
   return (
     <Link
       to={to}
-      className="group relative flex h-full items-center justify-center overflow-hidden outline-none"
+      className="group relative flex h-full items-center justify-center overflow-hidden outline-none transition duration-200 hover:bg-white/3 focus-visible:bg-white/3"
     >
       <IconImg
         file={mascot}
         alt=""
-        className={`pointer-events-none absolute ${mascotAnchorClass[mascotAnchor]} ${mascotClassName} opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100`}
+        className={`pointer-events-none absolute ${mascotAnchorClass[mascotAnchor]} ${mascotClassName} opacity-0 saturate-110 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100`}
       />
       <BlockHeading
         muted
-        className="relative z-10 text-center transition-colors duration-200 group-hover:text-[#e8e8e8] group-focus-visible:text-[#e8e8e8]"
+        className="relative z-10 text-center transition-all duration-200 group-hover:scale-[1.02] group-hover:text-[#e8e8e8] group-focus-visible:scale-[1.02] group-focus-visible:text-[#e8e8e8]"
       >
         {label}
       </BlockHeading>

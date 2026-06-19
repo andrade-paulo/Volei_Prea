@@ -43,7 +43,7 @@ export const progressScreenPadding =
   "px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10";
 
 export const progressHoverLine =
-  "pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-gradient-to-r from-transparent via-[#e85d2a] to-transparent opacity-0 shadow-[0_0_8px_#e85d2a] transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100";
+  "pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-gradient-to-r from-transparent via-[#e85d2a] to-transparent opacity-0 shadow-[0_0_10px_#e85d2a] transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100";
 
 export const progressTeamTitle =
   "font-display text-lg uppercase sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl";
@@ -52,7 +52,7 @@ export const progressTableText =
   "font-display text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl";
 
 export const progressBadge =
-  "select-none font-display flex items-center justify-center rounded-full bg-[#e85d2a] text-white size-11 text-base sm:size-12 sm:text-lg md:size-14 md:text-xl lg:size-16 lg:text-2xl xl:size-20 xl:text-3xl";
+  "select-none font-display flex items-center justify-center rounded-full bg-[#e85d2a] text-white shadow-[0_0_24px_rgba(232,93,42,0.25)] size-11 text-base sm:size-12 sm:text-lg md:size-14 md:text-xl lg:size-16 lg:text-2xl xl:size-20 xl:text-3xl";
 
 export const progressCaption =
   "font-display tabular-nums text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl";
@@ -70,4 +70,4 @@ export const progressScoreIcon =
   "size-6 sm:size-8 md:size-10 lg:size-12 xl:size-14";
 
 export const progressButton =
-  "font-display inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-[#e85d2a] px-6 py-2.5 tracking-wide text-[#e8e8e8] uppercase transition hover:bg-[#f06a38] sm:min-h-12 sm:px-8 sm:py-3 md:min-h-12 lg:min-h-14 lg:px-10 lg:py-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl";
+  "font-display inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-[#f07a4d]/35 bg-[#e85d2a] px-6 py-2.5 tracking-wide text-[#e8e8e8] shadow-[0_10px_30px_rgba(232,93,42,0.18)] uppercase transition hover:-translate-y-0.5 hover:bg-[#f06a38] hover:shadow-[0_14px_34px_rgba(232,93,42,0.24)] sm:min-h-12 sm:px-8 sm:py-3 md:min-h-12 lg:min-h-14 lg:px-10 lg:py-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl";
