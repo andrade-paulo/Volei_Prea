@@ -164,8 +164,7 @@ function nextPin(players: Player[]) {
 const ProgressDataContext = createContext<ProgressData | null>(null);
 
 export function ProgressDataProvider({ children }: { children: ReactNode }) {
-  // Enquanto não houver backend, este protótipo salva em localStorage.
-  // Quando a API entrar, este carregamento inicial pode migrar para GET /players e GET /matches.
+  // Persistência local do protótipo: jogadores e partidas são restaurados do navegador.
   const [players, setPlayers] = useState<Player[]>(() => readStorage(STORAGE_KEYS.players, seedPlayers));
   const [currentMatch, setCurrentMatch] = useState<CurrentMatch | null>(() =>
     readStorage(STORAGE_KEYS.currentMatch, null),
@@ -173,7 +172,6 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
   const [lastFinishedMatch, setLastFinishedMatch] = useState<MatchHistoryItem | null>(() =>
     readStorage(STORAGE_KEYS.lastFinishedMatch, null),
   );
-  // Depois, o histórico pode ser carregado com GET /matches e salvo com POST /matches ao encerrar partida.
   const [matches, setMatches] = useState<MatchHistoryItem[]>(() => readStorage(STORAGE_KEYS.matches, []));
 
   useEffect(() => {
@@ -201,8 +199,6 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
     }
 
     function addPlayer(name: string, skill: Player["skill"] = 3) {
-      // No backend, este cadastro vira um POST /players com o nome e o nível.
-      // A resposta da API substituiria o objeto criado aqui pelo registro salvo no banco.
       const trimmed = name.trim();
       const existing = players.find((player) => player.name.toLowerCase() === trimmed.toLowerCase());
       if (existing) return existing;
@@ -220,7 +216,6 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
     }
 
     function updatePlayer(playerId: string, patch: Pick<Player, "name" | "pin" | "skill">) {
-      // No backend, esta edição vira um PATCH /players/:id com nome, PIN e nível.
       const nextName = patch.name.trim();
       const nextPin = patch.pin.trim();
       if (!nextName || !nextPin) return;
@@ -322,8 +317,6 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
     }
 
     function finishMatch() {
-      // No backend, este encerramento vira um POST /matches com times, placar e duração.
-      // Depois disso, o histórico pode ser recarregado com um GET /matches.
       if (!currentMatch) return null;
 
       if (currentMatch.score1 === currentMatch.score2) return null;
