@@ -75,7 +75,7 @@ export function SplitPageSide({
   return (
     <Link
       to={to}
-      className="group relative flex h-full items-center justify-center overflow-hidden outline-none transition duration-200 hover:bg-white/3 focus-visible:bg-white/3"
+      className="group relative flex h-full items-center justify-center overflow-hidden outline-none transition duration-200"
     >
       <IconImg
         file={mascot}
@@ -84,7 +84,7 @@ export function SplitPageSide({
       />
       <BlockHeading
         muted
-        className="relative z-10 text-center transition-all duration-200 group-hover:scale-[1.02] group-hover:text-[#e8e8e8] group-focus-visible:scale-[1.02] group-focus-visible:text-[#e8e8e8]"
+        className="relative z-10 text-center transition-colors duration-200 group-hover:text-[#e8e8e8] group-focus-visible:text-[#e8e8e8]"
       >
         {label}
       </BlockHeading>
