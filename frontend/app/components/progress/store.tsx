@@ -59,8 +59,8 @@ type ProgressData = {
   updatePlayer: (playerId: string, patch: Pick<Player, "name" | "pin">) => void;
   deletePlayer: (playerId: string) => void;
   makeManualTeams: () => [TeamDraft, TeamDraft];
-  makeRandomTeams: () => [TeamDraft, TeamDraft];
-  makeBalancedTeams: () => [TeamDraft, TeamDraft];
+  makeRandomTeams: (selectedPlayerIds?: string[]) => [TeamDraft, TeamDraft];
+  makeBalancedTeams: (selectedPlayerIds?: string[]) => [TeamDraft, TeamDraft];
   startMatch: (mode: MatchMode, team1: TeamDraft, team2: TeamDraft) => void;
   updateScore: (side: "team1" | "team2", delta: 1 | -1) => void;
   tickMatch: () => void;
@@ -263,12 +263,18 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
       ] satisfies [TeamDraft, TeamDraft];
     }
 
-    function makeRandomTeams() {
-      return splitPlayers(shuffle(players.map((player) => player.id)).slice(0, TEAM_SIZE * 2));
+    function makeRandomTeams(selectedPlayerIds?: string[]) {
+      const pool = selectedPlayerIds?.length
+        ? players.filter((player) => selectedPlayerIds.includes(player.id))
+        : players;
+      return splitPlayers(shuffle(pool.map((player) => player.id)).slice(0, TEAM_SIZE * 2));
     }
 
-    function makeBalancedTeams() {
-      const sorted = [...players]
+    function makeBalancedTeams(selectedPlayerIds?: string[]) {
+      const pool = selectedPlayerIds?.length
+        ? players.filter((player) => selectedPlayerIds.includes(player.id))
+        : players;
+      const sorted = [...pool]
         .sort(
           (a, b) =>
             getWinRateFromRecord(b.wins, b.losses) - getWinRateFromRecord(a.wins, a.losses) ||

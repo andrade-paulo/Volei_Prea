@@ -5,6 +5,7 @@ import { AddPlayerDialog } from "~/components/progress/add-player-dialog";
 import { useProgressData } from "~/components/progress/store";
 import {
   BackButton,
+  BlockHeading,
   PrimaryButton,
   ProgressScreen,
   ScreenBody,
@@ -14,6 +15,7 @@ import {
   TeamHeader,
   TeamRoster,
 } from "~/components/progress/teams";
+import { progressBody } from "~/components/progress/tokens";
 
 type TeamSide = 0 | 1;
 
@@ -24,7 +26,12 @@ export function meta({}: Route.MetaArgs) {
 export default function BalancedTeams() {
   const navigate = useNavigate();
   const { players, addPlayer, getPlayerName, makeBalancedTeams, startMatch } = useProgressData();
-  const [teams, setTeams] = useState(() => makeBalancedTeams());
+  const defaultSelectedIds = useMemo(() => {
+    const draftPlayers = players.filter((player) => player.startsInDraft).map((player) => player.id);
+    return draftPlayers.length ? draftPlayers : players.map((player) => player.id);
+  }, [players]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(defaultSelectedIds);
+  const [teams, setTeams] = useState(() => makeBalancedTeams(defaultSelectedIds));
   const [dialogSide, setDialogSide] = useState<TeamSide | null>(null);
 
   const usedPlayerIds = useMemo(
@@ -36,12 +43,24 @@ export default function BalancedTeams() {
     [players, usedPlayerIds],
   );
   const availablePlayers = useMemo(
-    () => players.filter((player) => !usedPlayerIds.has(player.id)),
-    [players, usedPlayerIds],
+    () => players.filter((player) => selectedIds.includes(player.id) && !usedPlayerIds.has(player.id)),
+    [players, selectedIds, usedPlayerIds],
   );
 
   function playerRows(playerIds: string[]) {
     return playerIds.map((id) => ({ id, name: getPlayerName(id) }));
+  }
+
+  function togglePlayer(playerId: string) {
+    setSelectedIds((current) =>
+      current.includes(playerId)
+        ? current.filter((id) => id !== playerId)
+        : [...current, playerId],
+    );
+  }
+
+  function generateTeams() {
+    setTeams(makeBalancedTeams(selectedIds));
   }
 
   function removePlayer(side: TeamSide, playerId: string) {
@@ -71,6 +90,7 @@ export default function BalancedTeams() {
   function createAndAddPlayer(side: TeamSide, name: string, pin: string) {
     const player = addPlayer(name, pin);
     if (!player) return;
+    setSelectedIds((current) => (current.includes(player.id) ? current : [...current, player.id]));
     addPlayerToTeam(side, player.id);
   }
 
@@ -79,10 +99,43 @@ export default function BalancedTeams() {
     navigate("/progress/match");
   }
 
+  const canGenerate = selectedIds.length >= 2;
+  const teamsRespectSelection = [...teams[0].playerIds, ...teams[1].playerIds].every((id) => selectedIds.includes(id));
+  const canStart = teamsRespectSelection && teams[0].playerIds.length > 0 && teams[1].playerIds.length > 0;
+
   return (
     <ProgressScreen>
       <BackButton to="/progress/new" />
       <ScreenBody className="mt-14 sm:mt-16">
+        <section className="rounded-lg border border-white/15 bg-black/10 p-3 sm:p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <BlockHeading className="text-white">Jogadores da partida</BlockHeading>
+            <span className={`text-white/75 ${progressBody}`}>{selectedIds.length} selecionados</span>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {players.map((player) => {
+              const selected = selectedIds.includes(player.id);
+              const rate = Math.round((player.wins / Math.max(1, player.wins + player.losses)) * 100);
+              return (
+                <button
+                  key={player.id}
+                  type="button"
+                  onClick={() => togglePlayer(player.id)}
+                  className={`rounded-lg border px-3 py-3 text-left transition ${progressBody} ${selected ? "border-[#e85d2a] bg-[#e85d2a]/15 text-white" : "border-white/10 bg-white/5 text-white/80"}`}
+                >
+                  <div>{player.name}</div>
+                  <div className="text-xs text-white/65 sm:text-sm">{player.wins}V/{player.losses}D · {rate}%</div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <PrimaryButton onClick={generateTeams} className={!canGenerate ? "pointer-events-none opacity-40" : ""}>
+              Balancear times
+            </PrimaryButton>
+          </div>
+        </section>
+
         <TeamBoard
           leftHeader={
             <TeamHeader
@@ -120,7 +173,9 @@ export default function BalancedTeams() {
           }
         />
         <div className="flex justify-center pt-2 sm:pt-4">
-          <PrimaryButton onClick={beginMatch}>Começar!</PrimaryButton>
+          <PrimaryButton onClick={beginMatch} className={!canStart ? "pointer-events-none opacity-40" : ""}>
+            Começar!
+          </PrimaryButton>
         </div>
       </ScreenBody>
 
