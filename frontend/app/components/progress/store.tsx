@@ -7,7 +7,8 @@ export type Player = {
   id: string;
   name: string;
   pin: string;
-  skill: 1 | 2 | 3 | 4 | 5;
+  wins: number;
+  losses: number;
   createdAt: string;
   startsInDraft?: boolean;
 };
@@ -54,8 +55,8 @@ type ProgressData = {
   matches: MatchHistoryItem[];
   playerHistory: PlayerHistoryItem[];
   getPlayerName: (playerId: string) => string;
-  addPlayer: (name: string, skill?: Player["skill"]) => Player;
-  updatePlayer: (playerId: string, patch: Pick<Player, "name" | "pin" | "skill">) => void;
+  addPlayer: (name: string) => Player;
+  updatePlayer: (playerId: string, patch: Pick<Player, "name" | "pin">) => void;
   deletePlayer: (playerId: string) => void;
   makeManualTeams: () => [TeamDraft, TeamDraft];
   makeRandomTeams: () => [TeamDraft, TeamDraft];
@@ -76,16 +77,16 @@ const STORAGE_KEYS = {
 } as const;
 
 const seedPlayers: Player[] = [
-  { id: "player-paulo", name: "Paulo", pin: "01", skill: 4, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-rafael-m", name: "Rafael M.", pin: "02", skill: 5, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-rafael-a", name: "Rafael A.", pin: "03", skill: 3, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-matheus", name: "Matheus", pin: "04", skill: 4, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-pablo", name: "Pablo", pin: "05", skill: 2, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-vinicius", name: "Vinicius", pin: "06", skill: 3, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-mariana", name: "Mariana", pin: "07", skill: 4, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-yan", name: "Yan", pin: "08", skill: 5, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-laura", name: "Laura", pin: "09", skill: 3, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
-  { id: "player-toin", name: "Toin", pin: "10", skill: 2, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-paulo", name: "Paulo", pin: "01", wins: 8, losses: 5, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-rafael-m", name: "Rafael M.", pin: "02", wins: 13, losses: 3, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-rafael-a", name: "Rafael A.", pin: "03", wins: 9, losses: 6, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-matheus", name: "Matheus", pin: "04", wins: 4, losses: 7, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-pablo", name: "Pablo", pin: "05", wins: 6, losses: 8, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-vinicius", name: "Vinicius", pin: "06", wins: 12, losses: 4, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-mariana", name: "Mariana", pin: "07", wins: 10, losses: 7, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-yan", name: "Yan", pin: "08", wins: 7, losses: 8, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-laura", name: "Laura", pin: "09", wins: 11, losses: 6, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
+  { id: "player-toin", name: "Toin", pin: "10", wins: 6, losses: 5, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
 ];
 
 function makeId(prefix: string) {
@@ -112,29 +113,17 @@ function splitPlayers(playerIds: string[]): [TeamDraft, TeamDraft] {
   ];
 }
 
-function buildPlayerHistory(players: Player[], matches: MatchHistoryItem[]): PlayerHistoryItem[] {
-  return players.map((player) => {
-    let played = 0;
-    let wins = 0;
+function getWinRateFromRecord(wins: number, losses: number) {
+  const matches = wins + losses;
+  return matches === 0 ? 0 : Math.round((wins / matches) * 100);
+}
 
-    for (const match of matches) {
-      const team1HasPlayer = match.team1.playerIds.includes(player.id);
-      const team2HasPlayer = match.team2.playerIds.includes(player.id);
-      if (!team1HasPlayer && !team2HasPlayer) continue;
-
-      played += 1;
-      const winnerIds = match.score1 > match.score2 ? match.team1.playerIds : match.team2.playerIds;
-      if (winnerIds.includes(player.id)) wins += 1;
-    }
-
-    return {
-      ...player,
-      matches: played,
-      wins,
-      losses: played - wins,
-      winRate: played === 0 ? 0 : Math.round((wins / played) * 100),
-    };
-  });
+function buildPlayerHistory(players: Player[]): PlayerHistoryItem[] {
+  return players.map((player) => ({
+    ...player,
+    matches: player.wins + player.losses,
+    winRate: getWinRateFromRecord(player.wins, player.losses),
+  }));
 }
 
 function readStorage<T>(key: string, fallback: T) {
@@ -153,6 +142,25 @@ function writeStorage<T>(key: string, value: T) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
+function normalizePlayers(players: unknown): Player[] {
+  if (!Array.isArray(players)) return seedPlayers;
+
+  return players.map((player, index) => {
+    const item = player as Partial<Player> & { skill?: number };
+    const fallback = seedPlayers[index];
+
+    return {
+      id: item.id ?? fallback?.id ?? makeId("player"),
+      name: item.name ?? fallback?.name ?? `Jogador ${index + 1}`,
+      pin: item.pin ?? fallback?.pin ?? String(index + 1).padStart(2, "0"),
+      wins: typeof item.wins === "number" ? item.wins : fallback?.wins ?? 0,
+      losses: typeof item.losses === "number" ? item.losses : fallback?.losses ?? 0,
+      createdAt: item.createdAt ?? fallback?.createdAt ?? new Date().toISOString(),
+      startsInDraft: item.startsInDraft ?? fallback?.startsInDraft ?? false,
+    } satisfies Player;
+  });
+}
+
 function nextPin(players: Player[]) {
   const maxPin = players.reduce((max, player) => {
     const value = Number.parseInt(player.pin, 10);
@@ -165,7 +173,9 @@ const ProgressDataContext = createContext<ProgressData | null>(null);
 
 export function ProgressDataProvider({ children }: { children: ReactNode }) {
   // Persistência local do protótipo: jogadores e partidas são restaurados do navegador.
-  const [players, setPlayers] = useState<Player[]>(() => readStorage(STORAGE_KEYS.players, seedPlayers));
+  const [players, setPlayers] = useState<Player[]>(() =>
+    normalizePlayers(readStorage(STORAGE_KEYS.players, seedPlayers)),
+  );
   const [currentMatch, setCurrentMatch] = useState<CurrentMatch | null>(() =>
     readStorage(STORAGE_KEYS.currentMatch, null),
   );
@@ -190,7 +200,7 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
     writeStorage(STORAGE_KEYS.matches, matches);
   }, [matches]);
 
-  const playerHistory = useMemo(() => buildPlayerHistory(players, matches), [players, matches]);
+  const playerHistory = useMemo(() => buildPlayerHistory(players), [players]);
   const playerById = useMemo(() => new Map(players.map((player) => [player.id, player])), [players]);
 
   const value = useMemo<ProgressData>(() => {
@@ -198,7 +208,7 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
       return playerById.get(playerId)?.name ?? "Jogador removido";
     }
 
-    function addPlayer(name: string, skill: Player["skill"] = 3) {
+    function addPlayer(name: string) {
       const trimmed = name.trim();
       const existing = players.find((player) => player.name.toLowerCase() === trimmed.toLowerCase());
       if (existing) return existing;
@@ -207,7 +217,8 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
         id: makeId("player"),
         name: trimmed,
         pin: nextPin(players),
-        skill,
+        wins: 0,
+        losses: 0,
         createdAt: new Date().toISOString(),
         startsInDraft: false,
       };
@@ -215,7 +226,7 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
       return player;
     }
 
-    function updatePlayer(playerId: string, patch: Pick<Player, "name" | "pin" | "skill">) {
+    function updatePlayer(playerId: string, patch: Pick<Player, "name" | "pin">) {
       const nextName = patch.name.trim();
       const nextPin = patch.pin.trim();
       if (!nextName || !nextPin) return;
@@ -228,7 +239,7 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
 
         return current.map((player) =>
           player.id === playerId
-            ? { ...player, name: nextName, pin: nextPin, skill: patch.skill }
+            ? { ...player, name: nextName, pin: nextPin }
             : player,
         );
       });
@@ -263,10 +274,12 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
     }
 
     function makeBalancedTeams() {
-      // Balanceamento simples: jogadores de maior nível entram primeiro,
-      // sempre no time que está com menor soma de níveis no momento.
       const sorted = [...players]
-        .sort((a, b) => b.skill - a.skill || a.name.localeCompare(b.name))
+        .sort(
+          (a, b) =>
+            getWinRateFromRecord(b.wins, b.losses) - getWinRateFromRecord(a.wins, a.losses) ||
+            a.name.localeCompare(b.name),
+        )
         .slice(0, TEAM_SIZE * 2);
       const team1: string[] = [];
       const team2: string[] = [];
@@ -274,12 +287,13 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
       let total2 = 0;
 
       for (const player of sorted) {
+        const playerRate = getWinRateFromRecord(player.wins, player.losses);
         if (total1 <= total2) {
           team1.push(player.id);
-          total1 += player.skill;
+          total1 += playerRate;
         } else {
           team2.push(player.id);
-          total2 += player.skill;
+          total2 += playerRate;
         }
       }
 
@@ -321,7 +335,8 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
 
       if (currentMatch.score1 === currentMatch.score2) return null;
 
-      const winnerTeamName = currentMatch.score1 > currentMatch.score2 ? currentMatch.team1.name : currentMatch.team2.name;
+      const team1Won = currentMatch.score1 > currentMatch.score2;
+      const winnerTeamName = team1Won ? currentMatch.team1.name : currentMatch.team2.name;
       const finished: MatchHistoryItem = {
         id: currentMatch.id,
         mode: currentMatch.mode,
@@ -335,13 +350,59 @@ export function ProgressDataProvider({ children }: { children: ReactNode }) {
       };
 
       setMatches((current) => [finished, ...current.filter((match) => match.id !== finished.id)]);
+      setPlayers((current) =>
+        current.map((player) => {
+          if (currentMatch.team1.playerIds.includes(player.id)) {
+            return {
+              ...player,
+              wins: player.wins + (team1Won ? 1 : 0),
+              losses: player.losses + (team1Won ? 0 : 1),
+            };
+          }
+
+          if (currentMatch.team2.playerIds.includes(player.id)) {
+            return {
+              ...player,
+              wins: player.wins + (team1Won ? 0 : 1),
+              losses: player.losses + (team1Won ? 1 : 0),
+            };
+          }
+
+          return player;
+        }),
+      );
       setLastFinishedMatch(finished);
       setCurrentMatch(null);
       return finished;
     }
 
     function deleteMatch(matchId: string) {
+      const matchToDelete = matches.find((match) => match.id === matchId);
+      if (!matchToDelete) return;
+
+      const team1Won = matchToDelete.score1 > matchToDelete.score2;
       setMatches((current) => current.filter((match) => match.id !== matchId));
+      setPlayers((current) =>
+        current.map((player) => {
+          if (matchToDelete.team1.playerIds.includes(player.id)) {
+            return {
+              ...player,
+              wins: Math.max(0, player.wins - (team1Won ? 1 : 0)),
+              losses: Math.max(0, player.losses - (team1Won ? 0 : 1)),
+            };
+          }
+
+          if (matchToDelete.team2.playerIds.includes(player.id)) {
+            return {
+              ...player,
+              wins: Math.max(0, player.wins - (team1Won ? 0 : 1)),
+              losses: Math.max(0, player.losses - (team1Won ? 1 : 0)),
+            };
+          }
+
+          return player;
+        }),
+      );
       setLastFinishedMatch((match) => (match?.id === matchId ? null : match));
     }
 

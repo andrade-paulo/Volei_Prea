@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import type { Route } from "./+types/new.balanced";
 import { AddPlayerDialog } from "~/components/progress/add-player-dialog";
-import { type Player, useProgressData } from "~/components/progress/store";
+import { useProgressData } from "~/components/progress/store";
 import {
   BackButton,
   PrimaryButton,
@@ -68,8 +68,8 @@ export default function BalancedTeams() {
     setDialogSide(null);
   }
 
-  function createAndAddPlayer(side: TeamSide, name: string, skill: Player["skill"]) {
-    const player = addPlayer(name, skill);
+  function createAndAddPlayer(side: TeamSide, name: string) {
+    const player = addPlayer(name);
     addPlayerToTeam(side, player.id);
   }
 
@@ -130,7 +130,7 @@ export default function BalancedTeams() {
           usedPlayerNames={usedPlayerNames}
           onClose={() => setDialogSide(null)}
           onAddExisting={(playerId) => addPlayerToTeam(dialogSide, playerId)}
-          onCreateAndAdd={(name, skill) => createAndAddPlayer(dialogSide, name, skill)}
+          onCreateAndAdd={(name) => createAndAddPlayer(dialogSide, name)}
         />
       )}
     </ProgressScreen>

@@ -15,10 +15,9 @@ export function AddPlayerDialog({
   usedPlayerNames: Set<string>;
   onClose: () => void;
   onAddExisting: (playerId: string) => void;
-  onCreateAndAdd: (name: string, skill: Player["skill"]) => void;
+  onCreateAndAdd: (name: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [skill, setSkill] = useState<Player["skill"]>(3);
   const normalizedQuery = query.trim().toLowerCase();
   const filteredPlayers = normalizedQuery
     ? availablePlayers.filter((player) =>
@@ -63,7 +62,7 @@ export function AddPlayerDialog({
               onClick={() => onAddExisting(player.id)}
               className={`block w-full bg-[#6a6a6a] px-3 py-2 text-left uppercase hover:bg-[#777] ${progressBody}`}
             >
-              {player.name} — nível {player.skill}
+              {player.name} — {player.wins}V/{player.losses}D ({Math.round((player.wins / Math.max(1, player.wins + player.losses)) * 100)}%)
             </button>
           ))}
           {filteredPlayers.length === 0 && (
@@ -77,25 +76,10 @@ export function AddPlayerDialog({
           <p className="text-sm text-orange-200">Esse jogador já está em um dos times.</p>
         )}
 
-        <label className={`flex items-center gap-3 ${progressBody}`}>
-          Nível
-          <select
-            value={skill}
-            onChange={(event) => setSkill(Number(event.target.value) as Player["skill"])}
-            className="rounded-md bg-[#b0b0b0] px-3 py-2 text-black outline-none"
-          >
-            {[1, 2, 3, 4, 5].map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <button
           type="button"
           disabled={!canCreate}
-          onClick={() => onCreateAndAdd(query, skill)}
+          onClick={() => onCreateAndAdd(query)}
           className={`rounded-lg bg-[#e85d2a] px-4 py-2 uppercase disabled:cursor-default disabled:opacity-40 ${progressLabel}`}
         >
           Criar e adicionar

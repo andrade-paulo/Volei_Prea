@@ -28,15 +28,14 @@ function EditPlayerDialog({
 }: {
   player: Player;
   onClose: () => void;
-  onSave: (patch: Pick<Player, "name" | "pin" | "skill">) => void;
+  onSave: (patch: Pick<Player, "name" | "pin">) => void;
 }) {
   const [name, setName] = useState(player.name);
   const [pin, setPin] = useState(player.pin);
-  const [skill, setSkill] = useState<Player["skill"]>(player.skill);
 
   function save() {
     if (!name.trim() || !pin.trim()) return;
-    onSave({ name, pin, skill });
+    onSave({ name, pin });
   }
 
   return (
@@ -67,21 +66,6 @@ function EditPlayerDialog({
           />
         </label>
 
-        <label className={`flex items-center gap-3 ${progressBody}`}>
-          Nível
-          <select
-            value={skill}
-            onChange={(event) => setSkill(Number(event.target.value) as Player["skill"])}
-            className="rounded-md bg-[#b0b0b0] px-3 py-2 text-black outline-none"
-          >
-            {[1, 2, 3, 4, 5].map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <button
           type="button"
           onClick={save}
@@ -110,7 +94,6 @@ export default function HistoryPlayers() {
           <div className={`pb-8 ${playersTable} ${progressTableText}`}>
             <div className={`${historyTableRow} font-bold uppercase`}>
               <span className={historyHeaderCell}>Nome</span>
-              <span className={historyHeaderCell}>Nível</span>
               <span className={historyHeaderCell}>PIN</span>
               <span className={historyHeaderCell}>Partidas</span>
               <span className={historyHeaderCell}>Vitórias</span>
@@ -123,7 +106,6 @@ export default function HistoryPlayers() {
               <div key={player.id} className={historyTableRow}>
                 <div className={historyPlayersDataStrip}>
                   <span className={historyNameCell}>{player.name}</span>
-                  <span className={historyDataCell}>{player.skill}</span>
                   <span className={historyDataCell}>{player.pin}</span>
                   <span className={historyDataCell}>{player.matches}</span>
                   <span className={historyDataCell}>{player.wins}</span>

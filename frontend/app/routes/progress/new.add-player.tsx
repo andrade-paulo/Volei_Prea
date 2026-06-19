@@ -19,7 +19,6 @@ export default function AddPlayer() {
   const navigate = useNavigate();
   const { players, addPlayer } = useProgressData();
   const [query, setQuery] = useState("");
-  const [skill, setSkill] = useState(3);
 
   const suggestions = useMemo(
     () =>
@@ -34,7 +33,7 @@ export default function AddPlayer() {
   function savePlayer() {
     const name = query.trim();
     if (!name) return;
-    addPlayer(name, skill as 1 | 2 | 3 | 4 | 5);
+    addPlayer(name);
     navigate("/progress/new");
   }
 
@@ -51,20 +50,6 @@ export default function AddPlayer() {
           aria-label="Buscar ou cadastrar jogador"
           placeholder="Nome do jogador"
         />
-        <label className={`flex items-center gap-3 ${progressBody}`}>
-          Nível
-          <select
-            value={skill}
-            onChange={(e) => setSkill(Number(e.target.value))}
-            className="rounded-md bg-[#b0b0b0] px-3 py-2 text-black outline-none"
-          >
-            {[1, 2, 3, 4, 5].map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-        </label>
         {suggestions.length > 0 && (
           <ul className="overflow-hidden rounded-sm border border-black">
             {suggestions.map((player, i) => (
@@ -76,10 +61,9 @@ export default function AddPlayer() {
                   }`}
                   onClick={() => {
                     setQuery(player.name);
-                    setSkill(player.skill);
                   }}
                 >
-                  {player.name} — nível {player.skill}
+                  {player.name} — {player.wins}V/{player.losses}D ({Math.round((player.wins / Math.max(1, player.wins + player.losses)) * 100)}%)
                 </button>
               </li>
             ))}
