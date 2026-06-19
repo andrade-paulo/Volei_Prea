@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 export type MatchMode = "manual" | "random" | "balanced";
@@ -68,6 +68,12 @@ type ProgressData = {
 };
 
 const TEAM_SIZE = 5;
+const STORAGE_KEYS = {
+  players: "volei-prea.players",
+  currentMatch: "volei-prea.current-match",
+  lastFinishedMatch: "volei-prea.last-finished-match",
+  matches: "volei-prea.matches",
+} as const;
 
 const seedPlayers: Player[] = [
   { id: "player-paulo", name: "Paulo", pin: "01", skill: 4, createdAt: "2026-01-01T00:00:00.000Z", startsInDraft: true },
@@ -131,6 +137,22 @@ function buildPlayerHistory(players: Player[], matches: MatchHistoryItem[]): Pla
   });
 }
 
+function readStorage<T>(key: string, fallback: T) {
+  if (typeof window === "undefined") return fallback;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage<T>(key: string, value: T) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
 function nextPin(players: Player[]) {
   const maxPin = players.reduce((max, player) => {
     const value = Number.parseInt(player.pin, 10);
@@ -142,13 +164,33 @@ function nextPin(players: Player[]) {
 const ProgressDataContext = createContext<ProgressData | null>(null);
 
 export function ProgressDataProvider({ children }: { children: ReactNode }) {
-  // Quando o backend entrar, este estado inicial pode vir de um GET /players.
-  // Exemplo: fetch("/api/players").then((res) => res.json()).then(setPlayers).
-  const [players, setPlayers] = useState<Player[]>(seedPlayers);
-  const [currentMatch, setCurrentMatch] = useState<CurrentMatch | null>(null);
-  const [lastFinishedMatch, setLastFinishedMatch] = useState<MatchHistoryItem | null>(null);
+  // Enquanto não houver backend, este protótipo salva em localStorage.
+  // Quando a API entrar, este carregamento inicial pode migrar para GET /players e GET /matches.
+  const [players, setPlayers] = useState<Player[]>(() => readStorage(STORAGE_KEYS.players, seedPlayers));
+  const [currentMatch, setCurrentMatch] = useState<CurrentMatch | null>(() =>
+    readStorage(STORAGE_KEYS.currentMatch, null),
+  );
+  const [lastFinishedMatch, setLastFinishedMatch] = useState<MatchHistoryItem | null>(() =>
+    readStorage(STORAGE_KEYS.lastFinishedMatch, null),
+  );
   // Depois, o histórico pode ser carregado com GET /matches e salvo com POST /matches ao encerrar partida.
-  const [matches, setMatches] = useState<MatchHistoryItem[]>([]);
+  const [matches, setMatches] = useState<MatchHistoryItem[]>(() => readStorage(STORAGE_KEYS.matches, []));
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.players, players);
+  }, [players]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.currentMatch, currentMatch);
+  }, [currentMatch]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.lastFinishedMatch, lastFinishedMatch);
+  }, [lastFinishedMatch]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.matches, matches);
+  }, [matches]);
 
   const playerHistory = useMemo(() => buildPlayerHistory(players, matches), [players, matches]);
   const playerById = useMemo(() => new Map(players.map((player) => [player.id, player])), [players]);
